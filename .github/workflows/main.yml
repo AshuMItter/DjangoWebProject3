@@ -52,4 +52,4 @@ jobs:
           app-name: django-app-azure
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
           # Update startup command with path fix
-          startup-command: "gunicorn DjangoWebProject3.wsgi:application --pythonpath /home/site/wwwroot/DjangoWebProject3 --bind=0.0.0.0"
+        
