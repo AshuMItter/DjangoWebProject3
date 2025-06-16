@@ -26,30 +26,16 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Azure Login
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - uses: actions/checkout@v4
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Critical: Install dependencies on Azure
-      - name: Install dependencies on Azure
-        run: |
-          python -m venv antenv
-          source antenv/bin/activate
-          pip install -r requirements.txt
-          pip install gunicorn
-
-      # Add this new step to set PYTHONPATH
-      - name: Set Python path
-        run: |
-          echo "PYTHONPATH=/home/site/wwwroot/DjangoWebProject3" >> $GITHUB_ENV
-          
-      - name: Deploy to Azure
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: django-app-azure
-          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          # Update startup command with path fix
-        
+    - name: Deploy to Azure
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: django-app-azure
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        package: .  # Deploy entire repo
