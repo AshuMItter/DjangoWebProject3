@@ -7,10 +7,12 @@ from django.urls import path
 from django.contrib import admin
 from django.contrib.auth.views import LoginView, LogoutView
 from app import forms, views
-
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
-    path('', views.home, name='home'),
+    path('', views.index, name='index'),
+    path('app/',include('app.urls')),
     path('contact/', views.contact, name='contact'),
     path('about/', views.about, name='about'),
     path('login/',
