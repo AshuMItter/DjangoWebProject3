@@ -1,68 +1,55 @@
-name: Django DevSecOps Pipeline (F1 Free Tier)
+name: Django DevSecOps Pipeline
 
 on:
   push:
     branches: [master]
-  pull_request: {}
 
 jobs:
   test-and-scan:
     runs-on: ubuntu-latest
     steps:
-      # --- Checkout code ---
       - uses: actions/checkout@v4
-
-      # --- Set up Python ---
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-
-      # --- Install dependencies ---
       - name: Install dependencies
         run: |
+          python -m venv venv
+          source venv/bin/activate
           pip install -r requirements.txt
           pip install bandit safety
-          python -m venv antenv
-          source antenv/bin/activate
-          pip install -r requirements.txt
-          pip install gunicorn
-
-      # --- SAST: Bandit ---
-    #---  - name: Security scan (Bandit)
-    #---    run: bandit -r . --severity-level high
-
-      # --- SCA: Safety ---
-      - name: Check dependencies (safety)
+      - name: Security scan
         run: safety check --full-report
-
-    #---  - name: Install dependencies
-    #---    run: |
-    #---          pip install -r requirements.txt
-    #---          pip install gunicorn
-
 
   deploy-to-azure:
     needs: test-and-scan
     runs-on: ubuntu-latest
     environment: production
     steps:
-      # --- Checkout code ---
       - uses: actions/checkout@v4
-
-      # --- Azure Login ---
+      
       - name: Azure Login
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}  # Fix typo (was AZURE_CREDENTIALS)
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-     
+      # Critical: Install dependencies on Azure
+      - name: Install dependencies on Azure
+        run: |
+          python -m venv antenv
+          source antenv/bin/activate
+          pip install -r requirements.txt
+          pip install gunicorn
 
-      # --- Deploy to Azure F1 Tier (No Slots) ---
+      # Add this new step to set PYTHONPATH
+      - name: Set Python path
+        run: |
+          echo "PYTHONPATH=/home/site/wwwroot/DjangoWebProject3" >> $GITHUB_ENV
+          
       - name: Deploy to Azure
         uses: azure/webapps-deploy@v2
         with:
-          app-name: django-app-azure  # Must match your F1 App Service name
+          app-name: django-app-azure
           publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-          # Removed slot-name (F1 doesn't support slots)
-       
-          
+          # Update startup command with path fix
+          startup-command: "gunicorn DjangoWebProject3.wsgi:application --pythonpath /home/site/wwwroot/DjangoWebProject3 --bind=0.0.0.0"
