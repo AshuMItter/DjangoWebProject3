@@ -22,6 +22,10 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install bandit safety
+          python -m venv antenv
+          source antenv/bin/activate
+          pip install -r requirements.txt
+          pip install gunicorn
 
       # --- SAST: Bandit ---
     #---  - name: Security scan (Bandit)
@@ -31,10 +35,10 @@ jobs:
       - name: Check dependencies (safety)
         run: safety check --full-report
 
-      - name: Install dependencies
-        run: |
-              pip install -r requirements.txt
-              pip install gunicorn
+    #---  - name: Install dependencies
+    #---    run: |
+    #---          pip install -r requirements.txt
+    #---          pip install gunicorn
 
 
   deploy-to-azure:
